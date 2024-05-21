@@ -581,6 +581,15 @@ class MisReportInstance(models.Model):
         help="Search view to customize the filter box in the report widget.",
     )
 
+    filter_by_analytic_account = fields.Boolean(
+        default=False,
+        string="Filter by Analytic Account",
+        help="Enable filter by analytical account.",
+    )
+    analytic_account_ids = fields.Many2many(
+        "account.analytic.account", string="Analytic Account Filter"
+    )
+
     @api.depends("report_id.move_lines_source")
     def _compute_widget_search_view_id(self):
         for rec in self:
@@ -698,6 +707,27 @@ class MisReportInstance(models.Model):
                 or self.date_to != self.date_range_id.date_end
             ):
                 self.date_range_id = False
+
+    @api.onchange("analytic_account_ids")
+    def _onchange_analytic_account_ids(self):
+        if self.analytic_account_ids:
+            list_analytic = [
+                acc_analytic.name for acc_analytic in self.analytic_account_ids
+            ]
+            new_domain = (
+                [
+                    "|",
+                ]
+                if len(list_analytic) > 1
+                else []
+            )
+
+            for acc_name in list_analytic:
+                new_domain.append(("analytic_distribution", "ilike", acc_name))
+
+            self.analytic_domain = str(new_domain)
+        else:
+            self.analytic_domain = []
 
     def _add_analytic_filters_to_context(self, context):
         self.ensure_one()

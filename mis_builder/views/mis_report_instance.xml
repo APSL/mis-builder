@@ -183,6 +183,11 @@
                                     widget="many2many_tags"
                                 />
                                 <field name="source_aml_model_name" invisible="1" />
+                                <field name="filter_by_analytic_account" />
+                                <field name="analytic_account_ids"
+                                    widget="many2many_tags"
+                                    attrs="{'invisible': [('filter_by_analytic_account', '=', False)]}"
+                                />
                                 <field
                                     name="analytic_domain"
                                     widget="domain"
